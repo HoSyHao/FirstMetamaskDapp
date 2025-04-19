@@ -1,98 +1,51 @@
-import { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { ethers } from 'ethers';
-import { setWalletInfo, clearWalletInfo, setAccountChanged, setNetworkChanged } from '../redux/walletSlice';
+import { clearWalletInfo } from '../redux/walletSlice';
+import useWalletEvents from '../hooks/useWalletEvents';
 
 const WalletInfo = () => {
   const { account, balance, network, message } = useSelector((state) => state.wallet);
   const dispatch = useDispatch();
 
-  const fetchWalletInfo = async (address) => {
-    if (!address) return;
-    try {
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const balanceWei = await provider.getBalance(address);
-      const balance = ethers.formatEther(balanceWei);
-      const networkInfo = await provider.getNetwork();
-      dispatch(
-        setWalletInfo({
-          account: address,
-          balance,
-          network: networkInfo.name,
-          message: 'Wallet info updated',
-        })
-      );
-    } catch (error) {
-      console.error('Error fetching wallet info:', error);
-    }
-  };
+  useWalletEvents(account);
 
   const disconnectWallet = () => {
     dispatch(clearWalletInfo());
   };
 
-
-  useEffect(() => {
-    if (!window.ethereum) return;
-
-    const handleAccountsChanged = (accounts) => {
-      if (accounts.length > 0) {
-        dispatch(setAccountChanged(accounts[0]));
-        fetchWalletInfo(accounts[0]);
-      } else {
-        dispatch(clearWalletInfo());
-      }
-    };
-
-    window.ethereum.on('accountsChanged', handleAccountsChanged);
-
-    return () => {
-      window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
-    };
-  }, [dispatch]);
-
-
-  useEffect(() => {
-    if (!window.ethereum) return;
-
-    const handleChainChanged = async () => {
-      try {
-        const provider = new ethers.BrowserProvider(window.ethereum);
-        const networkInfo = await provider.getNetwork();
-        dispatch(setNetworkChanged(networkInfo.name));
-        if (account) fetchWalletInfo(account); 
-      } catch (error) {
-        console.error('Error handling chain changed:', error);
-      }
-    };
-
-    window.ethereum.on('chainChanged', handleChainChanged);
-
-    return () => {
-      window.ethereum.removeListener('chainChanged', handleChainChanged);
-    };
-  }, [account, dispatch]);
-
   if (!account) return null;
 
   return (
-    <div className="mt-6 text-center">
-      <p className="text-lg font-semibold">
-        Account: <span className="text-gray-700">{account}</span>
-      </p>
-      <p className="text-lg font-semibold">
-        Balance: <span className="text-gray-700">{balance ? `${balance} ETH` : 'Loading...'}</span>
-      </p>
-      <p className="text-lg font-semibold">
-        Network: <span className="text-gray-700">{network || 'Loading...'}</span>
-      </p>
+    <div className="mt-6 p-6 bg-gray-800 rounded-lg shadow-lg text-white max-w-md mx-auto">
+      <h3 className="text-xl font-bold mb-4 text-blue-300">Wallet Info</h3>
+      <div className="space-y-2">
+        <p className="text-lg">
+          <span className="font-semibold text-blue-200">Account:</span>{' '}
+          <span className="text-gray-300 break-all">{account}</span>
+        </p>
+        <p className="text-lg">
+          <span className="font-semibold text-blue-200">Balance:</span>{' '}
+          {balance ? (
+            <span className="text-gray-300">{balance} tBNB</span>
+          ) : (
+            <span className="text-gray-400 animate-pulse">Loading...</span> 
+          )}
+        </p>
+        <p className="text-lg">
+          <span className="font-semibold text-blue-200">Network:</span>{' '}
+          {network ? (
+            <span className="text-gray-300">{network}</span>
+          ) : (
+            <span className="text-gray-400 animate-pulse">Loading...</span> 
+          )}
+        </p>
+      </div>
       <button
         onClick={disconnectWallet}
-        className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition duration-200"
+        className="mt-4 w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition duration-200"
       >
         Disconnect
       </button>
-      {message && <p className="text-green-600 mt-2">{message}</p>}
+      {message && <p className="text-green-400 mt-2">{message}</p>}
     </div>
   );
 };
