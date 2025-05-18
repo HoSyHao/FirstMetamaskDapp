@@ -1,21 +1,47 @@
-import { useState } from 'react'; 
+import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { ethers } from 'ethers';
 import { toast } from 'react-toastify';
 import { setWalletInfo } from '../redux/walletSlice';
+import { INFURA_BSC_TESTNET_URL } from '../constants/infura';
 
 const ConnectWallet = () => {
   const dispatch = useDispatch();
   const { account, message } = useSelector((state) => state.wallet);
-  const [isConnecting, setIsConnecting] = useState(false); 
+  const [isConnecting, setIsConnecting] = useState(false);
+
+  const infuraProvider = new ethers.JsonRpcProvider(INFURA_BSC_TESTNET_URL);
+
+  // Di chuyển useEffect ra ngoài và gọi trong mọi lần render
+  useEffect(() => {
+    if (!account) {
+      const fetchNetwork = async () => {
+        try {
+          const networkInfo = await infuraProvider.getNetwork();
+          dispatch(
+            setWalletInfo({
+              account: null,
+              balance: null,
+              network: networkInfo.name,
+              message: 'Connect wallet to view balance',
+            })
+          );
+        } catch (error) {
+          console.error('Error fetching network from Infura:', error);
+          toast.error('Failed to fetch network from Infura');
+        }
+      };
+      fetchNetwork();
+    }
+  }, [dispatch, account]); // Thêm account vào dependency để chạy lại khi account thay đổi
 
   const connectMetaMask = async () => {
     if (!window.ethereum) {
-      toast.error('Please install MetaMask!'); 
+      toast.error('Please install MetaMask!');
       return;
     }
 
-    setIsConnecting(true); 
+    setIsConnecting(true);
     try {
       const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
       const account = accounts[0];
@@ -36,7 +62,7 @@ const ConnectWallet = () => {
       console.error('Error connecting to MetaMask:', error);
       toast.error('Failed to connect to MetaMask: ' + (error.message || 'Unknown error'));
     } finally {
-      setIsConnecting(false); 
+      setIsConnecting(false);
     }
   };
 

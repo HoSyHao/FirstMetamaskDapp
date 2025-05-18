@@ -2,18 +2,33 @@ import { useEffect } from 'react';
 import { ethers } from 'ethers';
 import { useDispatch, useSelector } from 'react-redux';
 import { setAccountChanged, setNetworkChanged, clearWalletInfo, setWalletInfo } from '../redux/walletSlice';
+import { INFURA_BSC_TESTNET_URL } from '../constants/infura';
 
 const useWalletEvents = (account) => {
   const dispatch = useDispatch();
   const { transactions } = useSelector((state) => state.wallet);
 
+  // Khởi tạo Infura provider
+  const infuraProvider = new ethers.JsonRpcProvider(INFURA_BSC_TESTNET_URL);
+
   const fetchWalletInfo = async (address) => {
-    if (!address) return;
+    if (!address) {
+      // Nếu chưa có account, đặt balance là null và network từ Infura
+      const networkInfo = await infuraProvider.getNetwork();
+      dispatch(
+        setWalletInfo({
+          account: null,
+          balance: null,
+          network: networkInfo.name,
+          message: 'Connect wallet to view balance',
+        })
+      );
+      return;
+    }
     try {
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const balanceWei = await provider.getBalance(address);
+      const balanceWei = await infuraProvider.getBalance(address); // Sử dụng Infura
       const balance = ethers.formatEther(balanceWei);
-      const networkInfo = await provider.getNetwork();
+      const networkInfo = await infuraProvider.getNetwork(); // Sử dụng Infura
       dispatch(
         setWalletInfo({
           account: address,
@@ -23,10 +38,13 @@ const useWalletEvents = (account) => {
         })
       );
     } catch (error) {
-      console.error('Error fetching wallet info:', error);
+      console.error('Error fetching wallet info with Infura:', error);
     }
   };
 
+  useEffect(() => {
+    fetchWalletInfo(account); // Gọi ngay cả khi account là null
+  }, [account, dispatch]);
 
   useEffect(() => {
     const lastTransaction = transactions[0];

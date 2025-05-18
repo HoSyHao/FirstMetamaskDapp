@@ -12,22 +12,28 @@ const WalletInfo = () => {
     dispatch(clearWalletInfo());
   };
 
-  if (!account) return null;
-
   return (
     <div className="mt-6 p-6 bg-gray-800 rounded-lg shadow-lg text-white max-w-md mx-auto">
       <h3 className="text-xl font-bold mb-4 text-blue-300">Wallet Info</h3>
       <div className="space-y-2">
         <p className="text-lg">
           <span className="font-semibold text-blue-200">Account:</span>{' '}
-          <span className="text-gray-300 break-all">{account}</span>
+          {account ? (
+            <span className="text-gray-300 break-all">{account}</span>
+          ) : (
+            <span className="text-gray-400">Not connected</span>
+          )}
         </p>
         <p className="text-lg">
           <span className="font-semibold text-blue-200">Balance:</span>{' '}
-          {balance ? (
-            <span className="text-gray-300">{balance} tBNB</span>
+          {account ? (
+            balance ? (
+              <span className="text-gray-300">{balance} tBNB</span>
+            ) : (
+              <span className="text-gray-400 animate-pulse">Loading...</span>
+            )
           ) : (
-            <span className="text-gray-400 animate-pulse">Loading...</span> 
+            <span className="text-gray-400">0 tBNB</span>
           )}
         </p>
         <p className="text-lg">
@@ -35,16 +41,18 @@ const WalletInfo = () => {
           {network ? (
             <span className="text-gray-300">{network}</span>
           ) : (
-            <span className="text-gray-400 animate-pulse">Loading...</span> 
+            <span className="text-gray-400 animate-pulse">Loading...</span>
           )}
         </p>
       </div>
-      <button
-        onClick={disconnectWallet}
-        className="mt-4 w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition duration-200"
-      >
-        Disconnect
-      </button>
+      {account && (
+        <button
+          onClick={disconnectWallet}
+          className="mt-4 w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition duration-200"
+        >
+          Disconnect
+        </button>
+      )}
       {message && <p className="text-green-400 mt-2">{message}</p>}
     </div>
   );
