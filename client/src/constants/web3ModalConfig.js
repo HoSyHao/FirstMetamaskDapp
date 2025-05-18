@@ -1,35 +1,23 @@
-// src/constants/web3ModalConfig.js
-import { createWeb3Modal, defaultConfig } from '@web3modal/ethers/react';
+import { mainnet, bscTestnet, arbitrum, sepolia } from '@reown/appkit/networks'
+import { EthersAdapter } from '@reown/appkit-adapter-ethers'
 
-const projectId = '783fa17a218d7c67191ec2dd83458cfd';
+// Get projectId from https://cloud.reown.com
+export const projectId = '783fa17a218d7c67191ec2dd83458cfd'
 
-const bscTestnet = {
-  chainId: 97,
-  name: 'BSC Testnet',
-  currency: 'tBNB',
-  explorerUrl: 'https://testnet.bscscan.com',
-  rpcUrl: 'https://data-seed-prebsc-1-s1.binance.org:8545/'
-};
+if (!projectId) {
+  throw new Error('Project ID is not defined')
+}
 
-const metadata = {
-  name: 'MetaMask Dapp',
-  description: 'A decentralized application with Web3Modal',
-  url: 'http://localhost:5173',
-  icons: ['https://your-dapp-url.com/icon.png']
-};
+// Create a metadata object - optional
+export const metadata = {
+  name: 'AppKit',
+  description: 'AppKit Example',
+  url: 'http://localhost:5173', // origin must match your domain & subdomain
+  icons: ['https://avatars.githubusercontent.com/u/179229932']
+}
 
-const modal = createWeb3Modal({
-  ethersConfig: defaultConfig({
-    metadata,
-    defaultChainId: 97,
-    chains: [bscTestnet]
-  }),
-  chains: [bscTestnet],
-  projectId,
-  themeMode: 'dark',
-  themeVariables: {
-    '--w3m-accent': '#2563eb',
-  }
-});
+// for custom networks visit -> https://docs.reown.com/appkit/react/core/custom-networks
+export const networks = [mainnet, bscTestnet, arbitrum, sepolia] 
 
-export default modal;
+// Set up Solana Adapter
+export const ethersAdapter = new EthersAdapter();

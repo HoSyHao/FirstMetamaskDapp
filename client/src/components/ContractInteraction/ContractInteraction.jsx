@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import useContract from '../../hooks/useContract';
 import useContractEvents from '../../hooks/useContractEvents';
@@ -6,15 +5,21 @@ import { incrementCounter, deposit, withdraw, resetCounter } from '../../service
 import CounterInfo from './CounterInfo';
 import DepositForm from './DepositForm';
 import WithdrawForm from './WithdrawForm';
-import TransactionHistory from './TransactionHistory';
+import TransactionHistory from './TransactionHistory'; 
 import ContractEvents from './ContractEvents';
+import { useState } from 'react';
+import { useAppKitAccount } from '@reown/appkit/react';
 
 const ContractInteraction = () => {
-  const { account, isLoading, transactions, events, counter, contractBalance, userBalance } = useSelector((state) => state.wallet);
+  const { account } = useSelector((state) => state.wallet);
+  const { isLoading, counter, contractBalance, userBalance } = useSelector((state) => state.contract);
+  const { transactions } = useSelector((state) => state.transactions);
+  const { events } = useSelector((state) => state.events) || { events: [] }; 
   const dispatch = useDispatch();
   const { contract, provider, owner, updateBalances } = useContract(account);
   const [depositAmount, setDepositAmount] = useState('');
   const [withdrawAmount, setWithdrawAmount] = useState('');
+  const { isConnected } = useAppKitAccount();
 
   useContractEvents(contract, updateBalances);
 
@@ -57,15 +62,13 @@ const ContractInteraction = () => {
 
       <h2 className="text-2xl font-bold mb-6 text-center text-blue-300">Contract Interaction</h2>
 
-      {/* Hiển thị thông tin hợp đồng ngay cả khi chưa kết nối */}
       <CounterInfo
-        counter={counter || '0'} // Hiển thị 0 nếu chưa tải
-        contractBalance={contractBalance || '0'} // Hiển thị 0 nếu chưa tải
-        userBalance={account ? userBalance || '0' : '0'} // 0 nếu chưa kết nối
+        counter={counter || '0'} 
+        contractBalance={contractBalance || '0'} 
+        userBalance={account ? userBalance || '0' : '0'} 
       />
 
-      {/* Chỉ hiển thị các nút và form khi đã kết nối ví */}
-      {account && (
+      {isConnected && (
         <>
           <div className="mb-6">
             <button
@@ -106,12 +109,11 @@ const ContractInteraction = () => {
               <div className="mb-6 text-gray-400 text-sm">Only the contract owner can reset the counter.</div>
             )
           )}
-
         </>
       )}
-      <TransactionHistory transactions={transactions} />
-      <ContractEvents events={events} />
-      {!account && (
+      <TransactionHistory transactions={transactions || []} />
+      <ContractEvents events={events || []} />
+      {!isConnected && (
         <div className="text-center text-gray-400 mt-4">
           Connect your wallet to interact with the contract.
         </div>

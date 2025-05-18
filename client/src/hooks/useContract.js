@@ -1,18 +1,19 @@
 import { useEffect, useState } from 'react';
-import { ethers } from 'ethers';
+import { BrowserProvider, ethers } from 'ethers';
 import { toast } from 'react-toastify';
 import { useDispatch } from 'react-redux';
-import { setCounter, setContractBalance, setUserBalance } from '../redux/walletSlice';
+import { useAppKitProvider, useAppKitNetworkCore } from '@reown/appkit/react';
+import { setCounter, setContractBalance, setUserBalance } from '../redux/slices/contractSlice';
 import { contractABI, contractAddress, BSC_TESTNET_CHAIN_ID } from '../constants/contract';
 import { INFURA_BSC_TESTNET_URL } from '../constants/infura';
 
 const useContract = (account) => {
   const dispatch = useDispatch();
   const [contract, setContract] = useState(null);
-  const [provider, setProvider] = useState(null);
   const [owner, setOwner] = useState(null);
+  const { walletProvider } = useAppKitProvider('eip155');
+  const { chainId } = useAppKitNetworkCore();
 
-  // Khởi tạo Infura provider để gọi các hàm "get"
   const infuraProvider = new ethers.JsonRpcProvider(INFURA_BSC_TESTNET_URL);
 
   const updateBalances = async () => {
@@ -27,7 +28,6 @@ const useContract = (account) => {
         toast.error('Failed to update balances: ' + (error.message || 'Unknown error'));
       }
     } else if (!account) {
-      // Nếu chưa kết nối ví, đặt userBalance là 0
       dispatch(setUserBalance('0'));
     }
   };
@@ -35,7 +35,6 @@ const useContract = (account) => {
   useEffect(() => {
     const initContract = async () => {
       try {
-        // Kiểm tra kết nối Infura
         try {
           await infuraProvider.getNetwork();
           toast.success('Connected to Infura for contract data');
@@ -45,10 +44,8 @@ const useContract = (account) => {
           return;
         }
 
-        // Khởi tạo contract read-only với Infura
         const contractReadOnly = new ethers.Contract(contractAddress, contractABI, infuraProvider);
 
-        // Gọi các hàm "get" bằng Infura ngay cả khi chưa kết nối ví
         try {
           const counterValue = await contractReadOnly.counter();
           dispatch(setCounter(counterValue.toString()));
@@ -73,25 +70,21 @@ const useContract = (account) => {
           toast.error('Failed to fetch contract owner');
         }
 
-        // Nếu có account (kết nối ví), khởi tạo contract với signer
-        if (account && window.ethereum) {
-          const providerInstance = new ethers.BrowserProvider(window.ethereum);
-          const network = await providerInstance.getNetwork();
-          if (network.chainId.toString(16) !== BSC_TESTNET_CHAIN_ID.slice(2)) {
+        if (account && walletProvider) {
+          const provider = new BrowserProvider(walletProvider, chainId);
+          if (chainId.toString(16) !== BSC_TESTNET_CHAIN_ID.slice(2)) {
             toast.error('Please switch to BSC Testnet');
             return;
           }
-          const signer = await providerInstance.getSigner();
+          const signer = await provider.getSigner();
           const contractWithSigner = new ethers.Contract(contractAddress, contractABI, signer);
           setContract(contractWithSigner);
-          setProvider(providerInstance);
 
-          // Cập nhật userBalance khi có account
           const userBal = await contractWithSigner.getMyBalance();
           dispatch(setUserBalance(ethers.formatEther(userBal)));
         } else {
-          setContract(contractReadOnly); // Sử dụng contract read-only nếu chưa kết nối
-          dispatch(setUserBalance('0')); // Đặt userBalance là 0 khi chưa kết nối
+          setContract(contractReadOnly); 
+          dispatch(setUserBalance('0')); 
         }
       } catch (error) {
         console.error('Error initializing contract:', error);
@@ -99,11 +92,11 @@ const useContract = (account) => {
       }
     };
     initContract();
-  }, [account, dispatch]);
+  }, [account, dispatch, walletProvider, chainId]);
 
   return {
     contract,
-    provider,
+    provider: walletProvider ? new BrowserProvider(walletProvider, chainId) : null,
     owner,
     updateBalances,
   };

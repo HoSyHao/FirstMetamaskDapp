@@ -2,7 +2,8 @@ import { useEffect } from 'react';
 import { ethers } from 'ethers';
 import { toast } from 'react-toastify';
 import { useDispatch } from 'react-redux';
-import { addEvent, setCounter } from '../redux/walletSlice';
+import { addEvent } from '../redux/slices/eventsSlice';
+import { setCounter } from '../redux/slices/contractSlice';
 
 const useContractEvents = (contract, updateBalances) => {
   const dispatch = useDispatch();

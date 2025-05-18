@@ -4,11 +4,9 @@ import { contractAddress, BSC_TESTNET_CHAIN_ID } from '../constants/contract';
 import {
   addTransaction,
   updateTransaction,
-  addEvent,
-  setLoading,
-  setCounter,
-  triggerBalanceUpdate,
-} from '../redux/walletSlice';
+} from '../redux/slices/transactionsSlice';
+import { addEvent } from '../redux/slices/eventsSlice';
+import { setCounter, setLoading } from '../redux/slices/contractSlice';
 
 export const incrementCounter = async (contract, account, dispatch) => {
   if (!contract) {
@@ -127,7 +125,6 @@ export const deposit = async (contract, provider, account, depositAmount, dispat
           timestamp: new Date().toISOString(),
         })
       );
-      dispatch(triggerBalanceUpdate()); 
       toast.success('Deposit successful!');
       return true;
     } catch (error) {
@@ -214,7 +211,7 @@ export const deposit = async (contract, provider, account, depositAmount, dispat
           timestamp: new Date().toISOString(),
         })
       );
-      dispatch(triggerBalanceUpdate()); 
+    
       toast.success('Withdrawal successful!');
       return true;
     } catch (error) {
