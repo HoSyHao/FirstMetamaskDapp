@@ -67,7 +67,6 @@ const useContract = (account) => {
           setOwner(ownerAddr);
         } catch (err) {
           console.error('Error fetching owner:', err);
-          toast.error('Failed to fetch contract owner');
         }
 
         if (account && walletProvider) {

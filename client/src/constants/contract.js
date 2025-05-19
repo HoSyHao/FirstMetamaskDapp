@@ -112,5 +112,5 @@ export const contractABI = [
     },
   ];
   
-  export const contractAddress = '0xff4c863B0c3be1D4f0D2092171E677c733C038AA';
+  export const contractAddress = import.meta.env.VITE_CONTRACT_ADDRESS;
   export const BSC_TESTNET_CHAIN_ID = '0x61';

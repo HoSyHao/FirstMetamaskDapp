@@ -2,7 +2,7 @@ import { mainnet, bscTestnet, arbitrum, sepolia } from '@reown/appkit/networks'
 import { EthersAdapter } from '@reown/appkit-adapter-ethers'
 
 // Get projectId from https://cloud.reown.com
-export const projectId = '783fa17a218d7c67191ec2dd83458cfd'
+export const projectId = import.meta.env.VITE_REOWN_PROJECT_ID
 
 if (!projectId) {
   throw new Error('Project ID is not defined')
