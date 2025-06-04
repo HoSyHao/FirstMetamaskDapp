@@ -1,0 +1,1 @@
+1. Không chuyển đổi ví khi đã connect 1 ví trước đó (Vd: Đăng nhâ)

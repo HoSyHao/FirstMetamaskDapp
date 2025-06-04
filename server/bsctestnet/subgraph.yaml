@@ -1,0 +1,32 @@
+specVersion: 1.3.0
+indexerHints:
+  prune: auto
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: TrainingContract
+    network: chapel
+    source:
+      address: "0xff4c863B0c3be1D4f0D2092171E677c733C038AA"
+      abi: TrainingContract
+      startBlock: 50132283
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - CounterIncremented
+        - Deposit
+        - Withdrawal
+      abis:
+        - name: TrainingContract
+          file: ./abis/TrainingContract.json
+      eventHandlers:
+        - event: CounterIncremented(indexed address,uint256)
+          handler: handleCounterIncremented
+        - event: Deposit(indexed address,uint256)
+          handler: handleDeposit
+        - event: Withdrawal(indexed address,uint256)
+          handler: handleWithdrawal
+      file: ./src/training-contract.ts
