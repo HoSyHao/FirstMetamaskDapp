@@ -1,0 +1,48 @@
+type NFTCollection @entity {
+  id: ID! # contract address
+  totalSupply: BigInt!
+  owner: Bytes!
+}
+
+type NFT @entity {
+  id: ID! # tokenId
+  tokenId: BigInt!
+  owner: Bytes!
+  tokenURI: String!
+  createdAt: BigInt!
+}
+
+type Listing @entity {
+  id: ID! # listingId
+  nftContract: Bytes!
+  tokenId: BigInt!
+  seller: Bytes!
+  price: BigInt!
+  active: Boolean!
+  createdAt: BigInt!
+}
+
+type Sale @entity {
+  id: ID! # transactionHash
+  listing: Listing!
+  buyer: Bytes!
+  seller: Bytes!
+  price: BigInt!
+  timestamp: BigInt!
+}
+
+type Offer @entity {
+  id: ID! # offerId
+  listing: Listing!
+  buyer: Bytes!
+  offerPrice: BigInt!
+  expiresAt: BigInt!
+  active: Boolean!
+}
+
+type User @entity {
+  id: ID! # address
+  nftsOwned: [NFT!]! @derivedFrom(field: "owner")
+  nftsListed: [Listing!]! @derivedFrom(field: "seller")
+  totalEarnings: BigInt!
+}

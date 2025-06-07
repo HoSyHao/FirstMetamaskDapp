@@ -1,0 +1,11 @@
+{
+  "chapel": {
+    "NFTMarketplace": {
+      "address": "0x1A2EDf7ae97aBcA5Ba704B24e9A86c4D95204E15",
+      "startBlock": 53947011
+    },
+    "MyNFTCollection": {
+      "address": "0xF040702D8d17c54574F1537DE024c194E448969d"
+    }
+  }
+}
