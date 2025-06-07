@@ -5,7 +5,7 @@ import {
   clearStore,
   beforeAll,
   afterAll
-} from "matchstick-as"
+} from "matchstick-as/assembly/index"
 import { BigInt, Address } from "@graphprotocol/graph-ts"
 import { ItemListed } from "../generated/schema"
 import { ItemListed as ItemListedEvent } from "../generated/NFTMarketplace/NFTMarketplace"
