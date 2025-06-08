@@ -42,3 +42,38 @@ dataSources:
         - event: PriceUpdated(indexed uint256,uint256,uint256)
           handler: handlePriceUpdated
       file: ./src/nft-marketplace.ts
+  - kind: ethereum
+    name: MyNFTCollection
+    network: chapel
+    source:
+      address: "0xF040702D8d17c54574F1537DE024c194E448969d"
+      abi: MyNFTCollection
+      startBlock: 53947103
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - Approval
+        - ApprovalForAll
+        - BaseURIUpdated
+        - NFTMinted
+        - MyNFTCollectionOwnershipTransferred
+        - Transfer
+      abis:
+        - name: MyNFTCollection
+          file: ./abis/MyNFTCollection.json
+      eventHandlers:
+        - event: Approval(indexed address,indexed address,indexed uint256)
+          handler: handleApproval
+        - event: ApprovalForAll(indexed address,indexed address,bool)
+          handler: handleApprovalForAll
+        - event: BaseURIUpdated(string)
+          handler: handleBaseURIUpdated
+        - event: NFTMinted(indexed address,indexed uint256)
+          handler: handleNFTMinted
+        - event: OwnershipTransferred(indexed address,indexed address)
+          handler: handleOwnershipTransferred
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
+      file: ./src/my-nft-collection.ts

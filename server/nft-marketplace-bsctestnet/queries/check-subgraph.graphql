@@ -1,0 +1,94 @@
+# Query để kiểm tra hoạt động của subgraph
+# Kiểm tra các entity chính và mối quan hệ giữa chúng
+
+query CheckSubgraph {
+  # Kiểm tra NFTCollection
+  nftcollections(first: 5) {
+    id
+    totalSupply
+    owner
+  }
+
+  # Kiểm tra NFT và mối quan hệ với User (owner)
+  nfts(first: 5) {
+    id
+    tokenId
+    owner {
+      id
+      totalEarnings
+      nftsOwned {
+        id
+        tokenId
+      }
+    }
+    tokenURI
+    createdAt
+  }
+
+  # Kiểm tra Listing và mối quan hệ với User (seller)
+  listings(first: 5) {
+    id
+    nftContract
+    tokenId
+    seller {
+      id
+      totalEarnings
+      nftsListed {
+        id
+        tokenId
+      }
+    }
+    price
+    active
+    createdAt
+  }
+
+  # Kiểm tra Sale và mối quan hệ với User (buyer, seller)
+  sales(first: 5) {
+    id
+    listing {
+      id
+      tokenId
+    }
+    buyer {
+      id
+      totalEarnings
+    }
+    seller {
+      id
+      totalEarnings
+    }
+    price
+    timestamp
+  }
+
+  # Kiểm tra Offer và mối quan hệ với User (buyer)
+  offers(first: 5) {
+    id
+    listing {
+      id
+      tokenId
+    }
+    buyer {
+      id
+      totalEarnings
+    }
+    offerPrice
+    expiresAt
+    active
+  }
+
+  # Kiểm tra User và các mối quan hệ dẫn xuất
+  users(first: 5) {
+    id
+    totalEarnings
+    nftsOwned {
+      id
+      tokenId
+    }
+    nftsListed {
+      id
+      tokenId
+    }
+  }
+}

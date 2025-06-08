@@ -1,75 +1,48 @@
-type ItemListed @entity(immutable: true) {
-  id: Bytes!
-  listingId: BigInt! # uint256
-  nftContract: Bytes! # address
-  tokenId: BigInt! # uint256
-  seller: Bytes! # address
-  price: BigInt! # uint256
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
+type NFTCollection @entity(immutable: false) {
+  id: ID! # Sử dụng contract address làm id
+  totalSupply: BigInt!
+  owner: Bytes!
 }
 
-type ItemSold @entity(immutable: true) {
-  id: Bytes!
-  listingId: BigInt! # uint256
-  nftContract: Bytes! # address
-  tokenId: BigInt! # uint256
-  seller: Bytes! # address
-  buyer: Bytes! # address
-  price: BigInt! # uint256
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
+type NFT @entity(immutable: false) {
+  id: ID! # Sử dụng tokenId làm id
+  tokenId: BigInt!
+  owner: User!
+  tokenURI: String!
+  createdAt: BigInt!
 }
 
-type ListingCancelled @entity(immutable: true) {
-  id: Bytes!
-  listingId: BigInt! # uint256
-  seller: Bytes! # address
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
+type Listing @entity(immutable: false) {
+  id: ID! # Sử dụng listingId làm id
+  nftContract: Bytes!
+  tokenId: BigInt!
+  seller: User!
+  price: BigInt!
+  active: Boolean!
+  createdAt: BigInt!
 }
 
-type OfferAccepted @entity(immutable: true) {
-  id: Bytes!
-  listingId: BigInt! # uint256
-  offerId: BigInt! # uint256
-  buyer: Bytes! # address
-  offerPrice: BigInt! # uint256
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
+type Sale @entity(immutable: false) {
+  id: ID! # Sử dụng transactionHash làm id
+  listing: Listing!
+  buyer: User! 
+  seller: User!
+  price: BigInt!
+  timestamp: BigInt!
 }
 
-type OfferMade @entity(immutable: true) {
-  id: Bytes!
-  listingId: BigInt! # uint256
-  offerId: BigInt! # uint256
-  buyer: Bytes! # address
-  offerPrice: BigInt! # uint256
-  expiresAt: BigInt! # uint256
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
+type Offer @entity(immutable: false) {
+  id: ID! # Sử dụng offerId làm id
+  listing: Listing!
+  buyer: User!
+  offerPrice: BigInt!
+  expiresAt: BigInt!
+  active: Boolean!
 }
 
-type OwnershipTransferred @entity(immutable: true) {
-  id: Bytes!
-  previousOwner: Bytes! # address
-  newOwner: Bytes! # address
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
-}
-
-type PriceUpdated @entity(immutable: true) {
-  id: Bytes!
-  listingId: BigInt! # uint256
-  oldPrice: BigInt! # uint256
-  newPrice: BigInt! # uint256
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
+type User @entity(immutable: false) {
+  id: ID! # Sử dụng address làm id
+  nftsOwned: [NFT!]! @derivedFrom(field: "owner")
+  nftsListed: [Listing!]! @derivedFrom(field: "seller")
+  totalEarnings: BigInt!
 }

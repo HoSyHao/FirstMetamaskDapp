@@ -5,58 +5,65 @@ import {
   clearStore,
   beforeAll,
   afterAll
-} from "matchstick-as"
+} from "matchstick-as/assembly/index"
 import { Address, BigInt } from "@graphprotocol/graph-ts"
-import { Approval } from "../generated/schema"
-import { Approval as ApprovalEvent } from "../generated/MyNFTCollection/MyNFTCollection"
-import { handleApproval } from "../src/my-nft-collection"
-import { createApprovalEvent } from "./my-nft-collection-utils"
+import { handleNFTMinted, handleTransfer } from "../src/my-nft-collection"
+import { createNFTMintedEvent, createTransferEvent } from "./my-nft-collection-utils"
 
-// Tests structure (matchstick-as >=0.5.0)
-// https://thegraph.com/docs/en/subgraphs/developing/creating/unit-testing-framework/#tests-structure
-
-describe("Describe entity assertions", () => {
+// Tests structure
+describe("MyNFTCollection entity assertions", () => {
   beforeAll(() => {
-    let owner = Address.fromString("0x0000000000000000000000000000000000000001")
-    let approved = Address.fromString(
-      "0x0000000000000000000000000000000000000001"
-    )
-    let tokenId = BigInt.fromI32(234)
-    let newApprovalEvent = createApprovalEvent(owner, approved, tokenId)
-    handleApproval(newApprovalEvent)
+    // Test handleNFTMinted
+    let to = Address.fromString("0x0000000000000000000000000000000000000001")
+    let tokenId = BigInt.fromI32(1)
+    let nftMintedEvent = createNFTMintedEvent(to, tokenId)
+    handleNFTMinted(nftMintedEvent)
+
+    // Test handleTransfer
+    let from = Address.fromString("0x0000000000000000000000000000000000000001")
+    let toNew = Address.fromString("0x0000000000000000000000000000000000000002")
+    let transferEvent = createTransferEvent(from, toNew, tokenId)
+    handleTransfer(transferEvent)
   })
 
   afterAll(() => {
     clearStore()
   })
 
-  // For more test scenarios, see:
-  // https://thegraph.com/docs/en/subgraphs/developing/creating/unit-testing-framework/#write-a-unit-test
+  test("NFTMinted creates NFT and updates NFTCollection", () => {
+    assert.entityCount("NFTCollection", 1)
+    assert.entityCount("NFT", 1)
+    assert.entityCount("User", 2) // 1 from mint, 1 from transfer
 
-  test("Approval created and stored", () => {
-    assert.entityCount("Approval", 1)
-
-    // 0xa16081f360e3847006db660bae1c6d1b2e17ec2a is the default address used in newMockEvent() function
     assert.fieldEquals(
-      "Approval",
-      "0xa16081f360e3847006db660bae1c6d1b2e17ec2a-1",
+      "NFTCollection",
+      "0x...",
+      "totalSupply",
+      "1"
+    )
+    assert.fieldEquals(
+      "NFT",
+      "1",
       "owner",
-      "0x0000000000000000000000000000000000000001"
+      "0x0000000000000000000000000000000000000002" // Updated by transfer
     )
     assert.fieldEquals(
-      "Approval",
-      "0xa16081f360e3847006db660bae1c6d1b2e17ec2a-1",
-      "approved",
-      "0x0000000000000000000000000000000000000001"
-    )
-    assert.fieldEquals(
-      "Approval",
-      "0xa16081f360e3847006db660bae1c6d1b2e17ec2a-1",
+      "NFT",
+      "1",
       "tokenId",
-      "234"
+      "1"
     )
-
-    // More assert options:
-    // https://thegraph.com/docs/en/subgraphs/developing/creating/unit-testing-framework/#asserts
+    assert.fieldEquals(
+      "User",
+      "0x0000000000000000000000000000000000000001",
+      "totalEarnings",
+      "0"
+    )
+    assert.fieldEquals(
+      "User",
+      "0x0000000000000000000000000000000000000002",
+      "totalEarnings",
+      "0"
+    )
   })
 })

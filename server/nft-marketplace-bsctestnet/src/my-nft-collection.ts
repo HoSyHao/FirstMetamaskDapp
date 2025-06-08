@@ -1,104 +1,88 @@
+import { BigInt, Bytes, store } from "@graphprotocol/graph-ts";
 import {
-  Approval as ApprovalEvent,
-  ApprovalForAll as ApprovalForAllEvent,
-  BaseURIUpdated as BaseURIUpdatedEvent,
-  NFTMinted as NFTMintedEvent,
-  OwnershipTransferred as OwnershipTransferredEvent,
   Transfer as TransferEvent,
-} from "../generated/MyNFTCollection/MyNFTCollection"
+  NFTMinted as NFTMintedEvent,
+  MyNFTCollection as MyNFTCollectionContract,
+  Approval as ApprovalEvent, 
+  ApprovalForAll as ApprovalForAllEvent, 
+  BaseURIUpdated as BaseURIUpdatedEvent,
+  OwnershipTransferred as OwnershipTransferredEvent,
+} from "../generated/MyNFTCollection/MyNFTCollection";
 import {
-  Approval,
-  ApprovalForAll,
-  BaseURIUpdated,
-  NFTMinted,
-  OwnershipTransferred,
-  Transfer,
-} from "../generated/schema"
+  NFTCollection,
+  NFT,
+  User,
+} from "../generated/schema";
 
-export function handleApproval(event: ApprovalEvent): void {
-  let entity = new Approval(
-    event.transaction.hash.concatI32(event.logIndex.toI32()),
-  )
-  entity.owner = event.params.owner
-  entity.approved = event.params.approved
-  entity.tokenId = event.params.tokenId
-
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
+// Handle NFTCollection
+function handleNFTCollection(contractAddress: Bytes): NFTCollection {
+  let collection = NFTCollection.load(contractAddress.toHexString());
+  if (!collection) {
+    collection = new NFTCollection(contractAddress.toHexString());
+    collection.totalSupply = BigInt.fromI32(0);
+    collection.owner = contractAddress; // Sử dụng address của contract
+    collection.save();
+  }
+  return collection;
 }
 
-export function handleApprovalForAll(event: ApprovalForAllEvent): void {
-  let entity = new ApprovalForAll(
-    event.transaction.hash.concatI32(event.logIndex.toI32()),
-  )
-  entity.owner = event.params.owner
-  entity.operator = event.params.operator
-  entity.approved = event.params.approved
-
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
-}
-
-export function handleBaseURIUpdated(event: BaseURIUpdatedEvent): void {
-  let entity = new BaseURIUpdated(
-    event.transaction.hash.concatI32(event.logIndex.toI32()),
-  )
-  entity.newBaseURI = event.params.newBaseURI
-
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
-}
-
+// Handle NFTMinted
 export function handleNFTMinted(event: NFTMintedEvent): void {
-  let entity = new NFTMinted(
-    event.transaction.hash.concatI32(event.logIndex.toI32()),
-  )
-  entity.to = event.params.to
-  entity.tokenId = event.params.tokenId
+  let collection = handleNFTCollection(event.address);
+  let nft = new NFT(event.params.tokenId.toString());
+  nft.tokenId = event.params.tokenId;
+  let user = User.load(event.params.to.toHexString());
+  if (!user) {
+    user = new User(event.params.to.toHexString());
+    user.totalEarnings = BigInt.fromI32(0);
+    user.save();
+  }
+  nft.owner = user.id;
 
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
+  // Gọi hàm tokenURI từ contract
+  let contract = MyNFTCollectionContract.bind(event.address);
+  let tokenURIResult = contract.try_tokenURI(event.params.tokenId);
+  if (!tokenURIResult.reverted) {
+    nft.tokenURI = tokenURIResult.value;
+  } else {
+    nft.tokenURI = ""; // Nếu gọi thất bại, để trống
+  }
 
-  entity.save()
+  nft.createdAt = event.block.timestamp;
+  nft.save();
+
+  collection.totalSupply = collection.totalSupply.plus(BigInt.fromI32(1));
+  collection.save();
 }
 
-export function handleOwnershipTransferred(
-  event: OwnershipTransferredEvent,
-): void {
-  let entity = new OwnershipTransferred(
-    event.transaction.hash.concatI32(event.logIndex.toI32()),
-  )
-  entity.previousOwner = event.params.previousOwner
-  entity.newOwner = event.params.newOwner
-
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
-}
-
+// Handle Transfer
 export function handleTransfer(event: TransferEvent): void {
-  let entity = new Transfer(
-    event.transaction.hash.concatI32(event.logIndex.toI32()),
-  )
-  entity.from = event.params.from
-  entity.to = event.params.to
-  entity.tokenId = event.params.tokenId
+  let nft = NFT.load(event.params.tokenId.toString());
+  if (nft) {
+    let user = User.load(event.params.to.toHexString());
+    if (!user) {
+      user = new User(event.params.to.toHexString());
+      user.totalEarnings = BigInt.fromI32(0);
+      user.save();
+    }
+    nft.owner = user.id;
+    nft.createdAt = event.block.timestamp;
+    nft.save();
+  }
+}
 
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
+// Handle Approval (rỗng)
+export function handleApproval(event: ApprovalEvent): void {
+}
 
-  entity.save()
+// Handle ApprovalForAll (rỗng)
+export function handleApprovalForAll(event: ApprovalForAllEvent): void {
+}
+
+// Handle BaseURIUpdated (rỗng)
+export function handleBaseURIUpdated(event: BaseURIUpdatedEvent): void {
+}
+
+// Handle OwnershipTransferred (rỗng)
+export function handleOwnershipTransferred(event: OwnershipTransferredEvent): void {
 }

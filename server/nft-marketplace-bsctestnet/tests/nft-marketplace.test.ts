@@ -6,79 +6,155 @@ import {
   beforeAll,
   afterAll
 } from "matchstick-as/assembly/index"
-import { BigInt, Address } from "@graphprotocol/graph-ts"
-import { ItemListed } from "../generated/schema"
-import { ItemListed as ItemListedEvent } from "../generated/NFTMarketplace/NFTMarketplace"
-import { handleItemListed } from "../src/nft-marketplace"
-import { createItemListedEvent } from "./nft-marketplace-utils"
+import { Address, BigInt } from "@graphprotocol/graph-ts"
+import {
+  handleItemListed,
+  handleItemSold,
+  handleListingCancelled,
+  handleOfferMade,
+  handleOfferAccepted,
+} from "../src/nft-marketplace"
+import {
+  createItemListedEvent,
+  createItemSoldEvent,
+  createListingCancelledEvent,
+  createOfferMadeEvent,
+  createOfferAcceptedEvent,
+} from "./nft-marketplace-utils"
 
-// Tests structure (matchstick-as >=0.5.0)
-// https://thegraph.com/docs/en/subgraphs/developing/creating/unit-testing-framework/#tests-structure
-
-describe("Describe entity assertions", () => {
+// Tests structure
+describe("NFTMarketplace entity assertions", () => {
   beforeAll(() => {
-    let listingId = BigInt.fromI32(234)
-    let nftContract = Address.fromString(
-      "0x0000000000000000000000000000000000000001"
-    )
-    let tokenId = BigInt.fromI32(234)
-    let seller = Address.fromString(
-      "0x0000000000000000000000000000000000000001"
-    )
-    let price = BigInt.fromI32(234)
-    let newItemListedEvent = createItemListedEvent(
-      listingId,
-      nftContract,
-      tokenId,
-      seller,
-      price
-    )
-    handleItemListed(newItemListedEvent)
+    // Test handleItemListed
+    let listingId = BigInt.fromI32(1)
+    let nftContract = Address.fromString("0x0000000000000000000000000000000000000001")
+    let tokenId = BigInt.fromI32(1)
+    let seller = Address.fromString("0x0000000000000000000000000000000000000001")
+    let price = BigInt.fromI32(100)
+    let itemListedEvent = createItemListedEvent(listingId, nftContract, tokenId, seller, price)
+    handleItemListed(itemListedEvent)
+
+    // Test handleItemSold
+    let buyer = Address.fromString("0x0000000000000000000000000000000000000002")
+    let itemSoldEvent = createItemSoldEvent(listingId, nftContract, tokenId, seller, buyer, price)
+    handleItemSold(itemSoldEvent)
+
+    // Test handleListingCancelled
+    let listingCancelledEvent = createListingCancelledEvent(listingId, seller)
+    handleListingCancelled(listingCancelledEvent)
+
+    // Test handleOfferMade
+    let offerId = BigInt.fromI32(1)
+    let offerPrice = BigInt.fromI32(90)
+    let expiresAt = BigInt.fromI32(1698777600) // Example timestamp
+    let offerMadeEvent = createOfferMadeEvent(listingId, offerId, buyer, offerPrice, expiresAt)
+    handleOfferMade(offerMadeEvent)
+
+    // Test handleOfferAccepted
+    let offerAcceptedEvent = createOfferAcceptedEvent(listingId, offerId, buyer, offerPrice)
+    handleOfferAccepted(offerAcceptedEvent)
   })
 
   afterAll(() => {
     clearStore()
   })
 
-  // For more test scenarios, see:
-  // https://thegraph.com/docs/en/subgraphs/developing/creating/unit-testing-framework/#write-a-unit-test
+  test("Entities created and updated correctly", () => {
+    assert.entityCount("Listing", 1)
+    assert.entityCount("Sale", 1) // From ItemSold and OfferAccepted
+    assert.entityCount("Offer", 1)
+    assert.entityCount("User", 2) // seller and buyer
 
-  test("ItemListed created and stored", () => {
-    assert.entityCount("ItemListed", 1)
-
-    // 0xa16081f360e3847006db660bae1c6d1b2e17ec2a is the default address used in newMockEvent() function
+    // Check Listing
     assert.fieldEquals(
-      "ItemListed",
-      "0xa16081f360e3847006db660bae1c6d1b2e17ec2a-1",
-      "listingId",
-      "234"
-    )
-    assert.fieldEquals(
-      "ItemListed",
-      "0xa16081f360e3847006db660bae1c6d1b2e17ec2a-1",
+      "Listing",
+      "1",
       "nftContract",
       "0x0000000000000000000000000000000000000001"
     )
     assert.fieldEquals(
-      "ItemListed",
-      "0xa16081f360e3847006db660bae1c6d1b2e17ec2a-1",
+      "Listing",
+      "1",
       "tokenId",
-      "234"
+      "1"
     )
     assert.fieldEquals(
-      "ItemListed",
+      "Listing",
+      "1",
+      "seller",
+      "0x0000000000000000000000000000000000000001"
+    )
+    assert.fieldEquals(
+      "Listing",
+      "1",
+      "price",
+      "100"
+    )
+    assert.fieldEquals(
+      "Listing",
+      "1",
+      "active",
+      "false" // Updated by ItemSold and OfferAccepted
+    )
+
+    // Check Sale from ItemSold
+    assert.fieldEquals(
+      "Sale",
+      "0xa16081f360e3847006db660bae1c6d1b2e17ec2a-1", // Transaction hash mock
+      "listing",
+      "1"
+    )
+    assert.fieldEquals(
+      "Sale",
+      "0xa16081f360e3847006db660bae1c6d1b2e17ec2a-1",
+      "buyer",
+      "0x0000000000000000000000000000000000000002"
+    )
+    assert.fieldEquals(
+      "Sale",
       "0xa16081f360e3847006db660bae1c6d1b2e17ec2a-1",
       "seller",
       "0x0000000000000000000000000000000000000001"
     )
     assert.fieldEquals(
-      "ItemListed",
+      "Sale",
       "0xa16081f360e3847006db660bae1c6d1b2e17ec2a-1",
       "price",
-      "234"
+      "100"
     )
 
-    // More assert options:
-    // https://thegraph.com/docs/en/subgraphs/developing/creating/unit-testing-framework/#asserts
+    // Check Offer
+    assert.fieldEquals(
+      "Offer",
+      "1",
+      "listing",
+      "1"
+    )
+    assert.fieldEquals(
+      "Offer",
+      "1",
+      "buyer",
+      "0x0000000000000000000000000000000000000002"
+    )
+    assert.fieldEquals(
+      "Offer",
+      "1",
+      "offerPrice",
+      "90"
+    )
+    assert.fieldEquals(
+      "Offer",
+      "1",
+      "active",
+      "false" // Updated by OfferAccepted
+    )
+
+    // Check User earnings
+    assert.fieldEquals(
+      "User",
+      "0x0000000000000000000000000000000000000001",
+      "totalEarnings",
+      "100" // From ItemSold
+    )
   })
 })

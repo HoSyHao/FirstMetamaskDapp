@@ -4,10 +4,9 @@ import {
   ItemListed,
   ItemSold,
   ListingCancelled,
-  OfferAccepted,
   OfferMade,
-  OwnershipTransferred,
-  PriceUpdated
+  OfferAccepted,
+  PriceUpdated,
 } from "../generated/NFTMarketplace/NFTMarketplace"
 
 export function createItemListedEvent(
@@ -22,22 +21,13 @@ export function createItemListedEvent(
   itemListedEvent.parameters = new Array()
 
   itemListedEvent.parameters.push(
-    new ethereum.EventParam(
-      "listingId",
-      ethereum.Value.fromUnsignedBigInt(listingId)
-    )
+    new ethereum.EventParam("listingId", ethereum.Value.fromUnsignedBigInt(listingId))
   )
   itemListedEvent.parameters.push(
-    new ethereum.EventParam(
-      "nftContract",
-      ethereum.Value.fromAddress(nftContract)
-    )
+    new ethereum.EventParam("nftContract", ethereum.Value.fromAddress(nftContract))
   )
   itemListedEvent.parameters.push(
-    new ethereum.EventParam(
-      "tokenId",
-      ethereum.Value.fromUnsignedBigInt(tokenId)
-    )
+    new ethereum.EventParam("tokenId", ethereum.Value.fromUnsignedBigInt(tokenId))
   )
   itemListedEvent.parameters.push(
     new ethereum.EventParam("seller", ethereum.Value.fromAddress(seller))
@@ -62,22 +52,13 @@ export function createItemSoldEvent(
   itemSoldEvent.parameters = new Array()
 
   itemSoldEvent.parameters.push(
-    new ethereum.EventParam(
-      "listingId",
-      ethereum.Value.fromUnsignedBigInt(listingId)
-    )
+    new ethereum.EventParam("listingId", ethereum.Value.fromUnsignedBigInt(listingId))
   )
   itemSoldEvent.parameters.push(
-    new ethereum.EventParam(
-      "nftContract",
-      ethereum.Value.fromAddress(nftContract)
-    )
+    new ethereum.EventParam("nftContract", ethereum.Value.fromAddress(nftContract))
   )
   itemSoldEvent.parameters.push(
-    new ethereum.EventParam(
-      "tokenId",
-      ethereum.Value.fromUnsignedBigInt(tokenId)
-    )
+    new ethereum.EventParam("tokenId", ethereum.Value.fromUnsignedBigInt(tokenId))
   )
   itemSoldEvent.parameters.push(
     new ethereum.EventParam("seller", ethereum.Value.fromAddress(seller))
@@ -101,51 +82,13 @@ export function createListingCancelledEvent(
   listingCancelledEvent.parameters = new Array()
 
   listingCancelledEvent.parameters.push(
-    new ethereum.EventParam(
-      "listingId",
-      ethereum.Value.fromUnsignedBigInt(listingId)
-    )
+    new ethereum.EventParam("listingId", ethereum.Value.fromUnsignedBigInt(listingId))
   )
   listingCancelledEvent.parameters.push(
     new ethereum.EventParam("seller", ethereum.Value.fromAddress(seller))
   )
 
   return listingCancelledEvent
-}
-
-export function createOfferAcceptedEvent(
-  listingId: BigInt,
-  offerId: BigInt,
-  buyer: Address,
-  offerPrice: BigInt
-): OfferAccepted {
-  let offerAcceptedEvent = changetype<OfferAccepted>(newMockEvent())
-
-  offerAcceptedEvent.parameters = new Array()
-
-  offerAcceptedEvent.parameters.push(
-    new ethereum.EventParam(
-      "listingId",
-      ethereum.Value.fromUnsignedBigInt(listingId)
-    )
-  )
-  offerAcceptedEvent.parameters.push(
-    new ethereum.EventParam(
-      "offerId",
-      ethereum.Value.fromUnsignedBigInt(offerId)
-    )
-  )
-  offerAcceptedEvent.parameters.push(
-    new ethereum.EventParam("buyer", ethereum.Value.fromAddress(buyer))
-  )
-  offerAcceptedEvent.parameters.push(
-    new ethereum.EventParam(
-      "offerPrice",
-      ethereum.Value.fromUnsignedBigInt(offerPrice)
-    )
-  )
-
-  return offerAcceptedEvent
 }
 
 export function createOfferMadeEvent(
@@ -160,56 +103,48 @@ export function createOfferMadeEvent(
   offerMadeEvent.parameters = new Array()
 
   offerMadeEvent.parameters.push(
-    new ethereum.EventParam(
-      "listingId",
-      ethereum.Value.fromUnsignedBigInt(listingId)
-    )
+    new ethereum.EventParam("listingId", ethereum.Value.fromUnsignedBigInt(listingId))
   )
   offerMadeEvent.parameters.push(
-    new ethereum.EventParam(
-      "offerId",
-      ethereum.Value.fromUnsignedBigInt(offerId)
-    )
+    new ethereum.EventParam("offerId", ethereum.Value.fromUnsignedBigInt(offerId))
   )
   offerMadeEvent.parameters.push(
     new ethereum.EventParam("buyer", ethereum.Value.fromAddress(buyer))
   )
   offerMadeEvent.parameters.push(
-    new ethereum.EventParam(
-      "offerPrice",
-      ethereum.Value.fromUnsignedBigInt(offerPrice)
-    )
+    new ethereum.EventParam("offerPrice", ethereum.Value.fromUnsignedBigInt(offerPrice))
   )
   offerMadeEvent.parameters.push(
-    new ethereum.EventParam(
-      "expiresAt",
-      ethereum.Value.fromUnsignedBigInt(expiresAt)
-    )
+    new ethereum.EventParam("expiresAt", ethereum.Value.fromUnsignedBigInt(expiresAt))
   )
 
   return offerMadeEvent
 }
 
-export function createOwnershipTransferredEvent(
-  previousOwner: Address,
-  newOwner: Address
-): OwnershipTransferred {
-  let ownershipTransferredEvent =
-    changetype<OwnershipTransferred>(newMockEvent())
+export function createOfferAcceptedEvent(
+  listingId: BigInt,
+  offerId: BigInt,
+  buyer: Address,
+  offerPrice: BigInt
+): OfferAccepted {
+  let offerAcceptedEvent = changetype<OfferAccepted>(newMockEvent())
 
-  ownershipTransferredEvent.parameters = new Array()
+  offerAcceptedEvent.parameters = new Array()
 
-  ownershipTransferredEvent.parameters.push(
-    new ethereum.EventParam(
-      "previousOwner",
-      ethereum.Value.fromAddress(previousOwner)
-    )
+  offerAcceptedEvent.parameters.push(
+    new ethereum.EventParam("listingId", ethereum.Value.fromUnsignedBigInt(listingId))
   )
-  ownershipTransferredEvent.parameters.push(
-    new ethereum.EventParam("newOwner", ethereum.Value.fromAddress(newOwner))
+  offerAcceptedEvent.parameters.push(
+    new ethereum.EventParam("offerId", ethereum.Value.fromUnsignedBigInt(offerId))
+  )
+  offerAcceptedEvent.parameters.push(
+    new ethereum.EventParam("buyer", ethereum.Value.fromAddress(buyer))
+  )
+  offerAcceptedEvent.parameters.push(
+    new ethereum.EventParam("offerPrice", ethereum.Value.fromUnsignedBigInt(offerPrice))
   )
 
-  return ownershipTransferredEvent
+  return offerAcceptedEvent
 }
 
 export function createPriceUpdatedEvent(
@@ -222,22 +157,13 @@ export function createPriceUpdatedEvent(
   priceUpdatedEvent.parameters = new Array()
 
   priceUpdatedEvent.parameters.push(
-    new ethereum.EventParam(
-      "listingId",
-      ethereum.Value.fromUnsignedBigInt(listingId)
-    )
+    new ethereum.EventParam("listingId", ethereum.Value.fromUnsignedBigInt(listingId))
   )
   priceUpdatedEvent.parameters.push(
-    new ethereum.EventParam(
-      "oldPrice",
-      ethereum.Value.fromUnsignedBigInt(oldPrice)
-    )
+    new ethereum.EventParam("oldPrice", ethereum.Value.fromUnsignedBigInt(oldPrice))
   )
   priceUpdatedEvent.parameters.push(
-    new ethereum.EventParam(
-      "newPrice",
-      ethereum.Value.fromUnsignedBigInt(newPrice)
-    )
+    new ethereum.EventParam("newPrice", ethereum.Value.fromUnsignedBigInt(newPrice))
   )
 
   return priceUpdatedEvent
