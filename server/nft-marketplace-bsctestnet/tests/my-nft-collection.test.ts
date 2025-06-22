@@ -5,7 +5,7 @@ import {
   clearStore,
   beforeAll,
   afterAll
-} from "matchstick-as/assembly/index"
+} from "matchstick-as"
 import { Address, BigInt } from "@graphprotocol/graph-ts"
 import { handleNFTMinted, handleTransfer } from "../src/my-nft-collection"
 import { createNFTMintedEvent, createTransferEvent } from "./my-nft-collection-utils"

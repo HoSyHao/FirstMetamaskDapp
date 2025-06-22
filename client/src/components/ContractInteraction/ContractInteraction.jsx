@@ -60,8 +60,6 @@ const ContractInteraction = () => {
         </div>
       )}
 
-      <h2 className="text-2xl font-bold mb-6 text-center text-blue-300">Contract Interaction</h2>
-
       <CounterInfo
         counter={counter || '0'} 
         contractBalance={contractBalance || '0'} 
