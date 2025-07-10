@@ -1,12 +1,12 @@
 import { ethers } from 'ethers';
 import { toast } from 'react-toastify';
-import { contractAddress, BSC_TESTNET_CHAIN_ID } from '../constants/contract';
+import { trainingContractAddress, BSC_TESTNET_CHAIN_ID } from '../constants/contract';
 import {
   addTransaction,
   updateTransaction,
-} from '../redux/slices/transactionsSlice';
-import { addEvent } from '../redux/slices/eventsSlice';
-import { setCounter, setLoading } from '../redux/slices/contractSlice';
+} from '../redux/slices/training/transactionsSlice';
+import { addEvent } from '../redux/slices/training/eventsSlice';
+import { setCounter, setLoading } from '../redux/slices/training/contractSlice';
 
 export const incrementCounter = async (contract, account, dispatch) => {
   if (!contract) {
@@ -231,7 +231,7 @@ export const deposit = async (contract, provider, account, depositAmount, dispat
         try {
           const data = contract.interface.encodeFunctionData('withdraw', [withdrawAmountWei]);
           await provider.call({
-            to: contractAddress,
+            to: trainingContractAddress,
             from: account,
             data: data,
           });
@@ -312,7 +312,7 @@ export const resetCounter = async (contract, account, counter, dispatch) => {
         try {
           const data = contract.interface.encodeFunctionData('resetCounter', []);
           await provider.call({
-            to: contractAddress,
+            to: trainingContractAddress,
             from: account,
             data: data,
           });

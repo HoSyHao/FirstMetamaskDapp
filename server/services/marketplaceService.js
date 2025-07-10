@@ -1,3 +1,4 @@
+// MarketplaceService.js
 const { request, gql } = require('graphql-request');
 const config = require('../config/config');
 
@@ -18,13 +19,17 @@ async function getActiveListings() {
     }
   `;
   const result = await request(config.subgraphEndpoint, query);
-  return result.listings;
+  const listings = result.listings.map(listing => ({
+    ...listing,
+    seller: listing.seller.id,
+  }));
+  return listings;
 }
 
 async function getSales() {
   const query = gql`
     query GetSales {
-      sales(first: 10) {
+      sales(first: 100, orderBy: timestamp, orderDirection: desc) {
         id
         listing {
           id
@@ -42,30 +47,14 @@ async function getSales() {
     }
   `;
   const result = await request(config.subgraphEndpoint, query);
-  return result.sales;
+  const sales = result.sales.map(sale => ({
+    ...sale,
+    buyer: sale.buyer.id,
+    seller: sale.seller.id,
+    price: sale.price.toString(), // Chuyển BigInt thành string để dễ xử lý
+    timestamp: new Date(parseInt(sale.timestamp.toString()) * 1000).toISOString(), // Chuyển timestamp sang định dạng ISO
+  }));
+  return sales;
 }
 
-async function getUserOffers(userAddress) {
-  const query = gql`
-    query GetUserOffers($userAddress: String!) {
-      offers(where: { buyer: $userAddress, active: true }) {
-        id
-        listing {
-          id
-          tokenId
-        }
-        buyer {
-          id
-        }
-        offerPrice
-        expiresAt
-        active
-      }
-    }
-  `;
-  const variables = { userAddress };
-  const result = await request(config.subgraphEndpoint, query, variables);
-  return result.offers;
-}
-
-module.exports = { getActiveListings, getSales, getUserOffers };
+module.exports = { getActiveListings, getSales };

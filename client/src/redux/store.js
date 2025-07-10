@@ -1,10 +1,12 @@
 import { configureStore, combineReducers } from '@reduxjs/toolkit';
 import walletReducer from './slices/walletSlice';
-import contractReducer from './slices/contractSlice';
-import transactionsReducer from './slices/transactionsSlice';
-import eventsReducer from './slices/eventsSlice';
-import nftReducer from './slices/nftSlice';
-import listingReducer from './slices/listingSlice';
+import contractReducer from './slices/training/contractSlice';
+import transactionMReducer from './slices/marketplace/transactionsSlice';
+import eventsReducer from './slices/training/eventsSlice';
+import transactionsReducer from './slices/training/transactionsSlice';
+import nftReducer from './slices/marketplace/nftSlice';
+import listingReducer from './slices/marketplace/listingSlice';
+import userReducer from './slices/marketplace/userSlice';
 
 const rootReducer = combineReducers({
   wallet: walletReducer,
@@ -13,6 +15,8 @@ const rootReducer = combineReducers({
   events: eventsReducer,
   nfts: nftReducer,
   listings: listingReducer,
+  transactionM: transactionMReducer,
+  user: userReducer,
 });
 
 const store = configureStore({

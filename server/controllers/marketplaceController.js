@@ -9,23 +9,14 @@ async function getActiveListings(req, res) {
   }
 }
 
-async function getSales(req, res) {
+async function getTransactionHistory(req, res) {
   try {
-    const sales = await marketplaceService.getSales();
-    res.json({ success: true, data: sales });
+    const transactions = await marketplaceService.getSales();
+    res.json({ success: true, data: transactions });
   } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: 'Failed to fetch transaction history' });
   }
 }
 
-async function getUserOffers(req, res) {
-  try {
-    const userAddress = req.params.userAddress;
-    const offers = await marketplaceService.getUserOffers(userAddress);
-    res.json({ success: true, data: offers });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-}
 
-module.exports = { getActiveListings, getSales, getUserOffers };
+module.exports = { getActiveListings, getTransactionHistory };

@@ -3,8 +3,8 @@ import { BrowserProvider, ethers } from 'ethers';
 import { toast } from 'react-toastify';
 import { useDispatch } from 'react-redux';
 import { useAppKitProvider, useAppKitNetworkCore } from '@reown/appkit/react';
-import { setCounter, setContractBalance, setUserBalance } from '../redux/slices/contractSlice';
-import { contractABI, contractAddress, BSC_TESTNET_CHAIN_ID } from '../constants/contract';
+import { setCounter, setContractBalance, setUserBalance } from '../redux/slices/training/contractSlice';
+import { trainingContractABI, trainingContractAddress, BSC_TESTNET_CHAIN_ID } from '../constants/contract';
 import { INFURA_BSC_TESTNET_URL } from '../constants/infura';
 
 const useContract = (account) => {
@@ -44,7 +44,7 @@ const useContract = (account) => {
           return;
         }
 
-        const contractReadOnly = new ethers.Contract(contractAddress, contractABI, infuraProvider);
+        const contractReadOnly = new ethers.Contract(trainingContractAddress, trainingContractABI, infuraProvider);
 
         try {
           const counterValue = await contractReadOnly.counter();
@@ -76,7 +76,7 @@ const useContract = (account) => {
             return;
           }
           const signer = await provider.getSigner();
-          const contractWithSigner = new ethers.Contract(contractAddress, contractABI, signer);
+          const contractWithSigner = new ethers.Contract(trainingContractAddress, trainingContractABI, signer);
           setContract(contractWithSigner);
 
           const userBal = await contractWithSigner.getMyBalance();

@@ -23,7 +23,7 @@ async function getUser(userAddress) {
   `;
   const variables = { userAddress };
   const result = await request(config.subgraphEndpoint, query, variables);
-  return result.users[0]; 
+  return result.users[0] || { id: userAddress, totalEarnings: "0", nftsOwned: [], nftsListed: [] }; // Giá trị mặc định nếu không tìm thấy
 }
 
 module.exports = { getUser };

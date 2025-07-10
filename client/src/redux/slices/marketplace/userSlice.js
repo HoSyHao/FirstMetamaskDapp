@@ -1,16 +1,16 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { API_ENDPOINTS } from '../../constants/api';
-import { apiClient } from '../../lib/api-client';
+import { API_ENDPOINTS } from '../../../constants/api';
+import { apiClient } from '../../../lib/apiClient';
 
-export const loadUserNFTs = createAsyncThunk(
-  'nfts/loadUserNFTs',
+export const loadUser = createAsyncThunk(
+  'user/loadUser',
   async (userAddress, { rejectWithValue }) => {
     try {
       const response = await apiClient.get(API_ENDPOINTS.USER_NFTS(userAddress));
       if (!response.data.success) {
         return rejectWithValue(response.data.error || 'Unknown error');
       }
-      return response.data.data.nftsOwned || [];
+      return response.data.data || { totalEarnings: '0' };
     } catch (error) {
       console.error('API Error:', error.response?.data || error.message);
       return rejectWithValue(error.response?.data?.error || error.message);
@@ -18,29 +18,30 @@ export const loadUserNFTs = createAsyncThunk(
   }
 );
 
-const nftSlice = createSlice({
-  name: 'nfts',
+const userSlice = createSlice({
+  name: 'user',
   initialState: {
-    items: [],
+    totalEarnings: '0',
     loading: false,
     error: null,
   },
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(loadUserNFTs.pending, (state) => {
+      .addCase(loadUser.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(loadUserNFTs.fulfilled, (state, action) => {
-        state.items = action.payload;
+      .addCase(loadUser.fulfilled, (state, action) => {
+        state.totalEarnings = action.payload.totalEarnings || '0';
         state.loading = false;
       })
-      .addCase(loadUserNFTs.rejected, (state, action) => {
+      .addCase(loadUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });
   },
 });
 
-export default nftSlice.reducer;
+export const {} = userSlice.actions;
+export default userSlice.reducer;

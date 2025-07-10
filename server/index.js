@@ -1,10 +1,12 @@
 const express = require('express');
-const nftRoutes = require('./routes/nftRoutes');
 const marketplaceRoutes = require('./routes/marketplaceRoutes');
 const userRoutes = require('./routes/userRoutes');
 const cors = require('cors');
+const { initializeSocket } = require('./socket');
 
 const app = express();
+const httpServer = require('http').createServer(app);
+const { io } = initializeSocket(httpServer);
 
 app.use(cors({
   origin: [process.env.ORIGIN],
@@ -13,11 +15,10 @@ app.use(cors({
 })) 
 
 app.use(express.json());
-app.use('/api', nftRoutes);
 app.use('/api', marketplaceRoutes);
 app.use('/api', userRoutes);
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+const PORT = process.env.PORT;
+httpServer.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
