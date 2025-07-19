@@ -8,9 +8,9 @@ dataSources:
     name: NFTMarketplace
     network: chapel
     source:
-      address: "0x1010082d9EeBb146B38D771446608Ce435f72eF8"
+      address: "0x2298ddc3997832D24D1Df83a5E181E6b241f3C61"
       abi: NFTMarketplace
-      startBlock: 53947011
+      startBlock: 58442021
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.9
@@ -46,9 +46,9 @@ dataSources:
     name: MyNFTCollection
     network: chapel
     source:
-      address: "0xF040702D8d17c54574F1537DE024c194E448969d"
+      address: "0x2aaf4E6D1Fa2FCde93112714f3A6353e5e2844E0"
       abi: MyNFTCollection
-      startBlock: 53947103
+      startBlock: 58360880
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.9

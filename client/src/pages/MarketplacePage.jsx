@@ -1,9 +1,7 @@
-// src/pages/MarketplacePage.jsx
 import { useSelector, useDispatch } from 'react-redux';
 import { useEffect } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import TransactionHistoryM from '../components/Marketplace/TransactionHistoryM';
-import WalletInfo from '../components/WalletInfo';
 import ErrorBoundary from '../components/ErrorBoundary';
 import { loadUserNFTs } from '../redux/slices/marketplace/nftSlice';
 import { loadListings } from '../redux/slices/marketplace/listingSlice';
@@ -17,15 +15,14 @@ const MarketplacePage = () => {
 
   useEffect(() => {
     if (account) {
-      dispatch(loadUserNFTs(account));
-      dispatch(loadListings());
+      dispatch(loadUserNFTs({ userAddress: account, page: 1, limit: 12 }));
+      dispatch(loadListings({ page: 1, limit: 12, includeMetadata: true })); // Đảm bảo includeMetadata
       dispatch(loadUser(account));
     }
   }, [account, dispatch]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
-      <WalletInfo />
       <div className="flex flex-col lg:flex-row gap-6 mt-10">
         {/* Phần trái: Tabs và nội dung */}
         <div className="w-full lg:w-3/4 bg-gray-800 bg-opacity-90 rounded-xl shadow-2xl p-6 border border-gray-700">
@@ -60,11 +57,11 @@ const MarketplacePage = () => {
           </div>
           <div className="mt-4">
             <p className="text-lg text-green-400 mb-4">Total Earnings: {ethers.formatEther(totalEarnings).replace('.', ',')} tBNB</p>
-            <Outlet /> {/* Render component con dựa trên route */}
+            <Outlet />
           </div>
         </div>
         {/* Phần phải: Transaction History */}
-        <div className="w-full lg:w-1/4 bg-gray-800 bg-opacity-90 rounded-xl shadow-2xl p-6 border border-gray-700 h-fit">
+        <div className="w-full lg:w-1/4 bg-gray-800 bg-opacity-90 rounded-xl shadow-2xl p-6 border border-gray-700 h-[74vh]">
           <TransactionHistoryM />
         </div>
       </div>

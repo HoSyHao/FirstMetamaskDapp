@@ -4,13 +4,20 @@ import { apiClient } from '../../../lib/apiClient';
 
 export const loadTransactionHistory = createAsyncThunk(
   'transactions/loadTransactionHistory',
-  async (_, { rejectWithValue }) => {
+  async ({ page, limit }, { rejectWithValue, getState }) => {
     try {
-      const response = await apiClient.get(API_ENDPOINTS.TRANSACTIONS);
+      const response = await apiClient.get(API_ENDPOINTS.TRANSACTIONS, {
+        params: { page, limit },
+      });
       if (!response.data.success) {
         return rejectWithValue(response.data.error || 'Unknown error');
       }
-      return response.data.data || [];
+      const existingItems = getState().transactionM.items || [];
+      const newItems = response.data.data || [];
+      const uniqueItems = page === 1 ? newItems : [...existingItems, ...newItems].filter((item, index, self) =>
+        index === self.findIndex((t) => t.id === item.id)
+      );
+      return { items: uniqueItems, total: response.data.total || uniqueItems.length }; // Thêm total từ server
     } catch (error) {
       console.error('API Error:', error.response?.data || error.message);
       return rejectWithValue(error.response?.data?.error || error.message);
@@ -22,6 +29,7 @@ const transactionSlice = createSlice({
   name: 'transactionM',
   initialState: {
     items: [],
+    total: 0, // Thêm trường total
     loading: false,
     error: null,
   },
@@ -29,9 +37,9 @@ const transactionSlice = createSlice({
     addTransaction: (state, action) => {
       const newTransaction = action.payload;
       console.log('Adding transaction:', newTransaction);
-      // Kiểm tra trùng lặp dựa trên id
       if (!state.items.some(item => item.id === newTransaction.id)) {
         state.items = [newTransaction, ...state.items];
+        state.items.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
       } else {
         console.log(`Transaction with id ${newTransaction.id} already exists, skipping`);
       }
@@ -44,14 +52,8 @@ const transactionSlice = createSlice({
         state.error = null;
       })
       .addCase(loadTransactionHistory.fulfilled, (state, action) => {
-        state.items = action.payload.map(item => ({
-          id: item.id || 'N/A',
-          listing: { id: item.listing?.id || 'N/A', tokenId: item.listing?.tokenId || 'N/A' },
-          buyer: item.buyer ? item.buyer : 'N/A',
-          seller: item.seller ? item.seller : 'N/A',
-          price: item.price?.toString() || '0',
-          timestamp: item.timestamp || new Date().toISOString(),
-        }));
+        state.items = action.payload.items;
+        state.total = action.payload.total; // Cập nhật total
         state.loading = false;
       })
       .addCase(loadTransactionHistory.rejected, (state, action) => {

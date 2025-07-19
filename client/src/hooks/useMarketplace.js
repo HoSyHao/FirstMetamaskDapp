@@ -5,7 +5,7 @@ import { useAppKitProvider, useAppKitNetworkCore } from '@reown/appkit/react';
 import { mintNFT, buyItem, listItem, cancelListing } from '../services/marketplaceService';
 import { marketplaceABI, marketplaceAddress, nftCollectionABI, nftCollectionAddress, BSC_TESTNET_CHAIN_ID } from '../constants/contract';
 import { INFURA_BSC_TESTNET_URL } from '../constants/infura';
-import { toast } from 'react-toastify'; // Import toast
+import { toast } from 'react-toastify';
 
 const useMarketplace = (account) => {
   const dispatch = useDispatch();
@@ -16,13 +16,12 @@ const useMarketplace = (account) => {
   const infuraProvider = new ethers.JsonRpcProvider(INFURA_BSC_TESTNET_URL);
 
   const updateBalances = async () => {
-    // Logic cập nhật balance nếu cần, gọi API BE nếu có
+    // Logic cập nhật balance nếu cần
   };
 
   useEffect(() => {
     const initContracts = async () => {
       try {
-        // Khởi tạo contract read-only
         const marketplaceReadOnly = new ethers.Contract(marketplaceAddress, marketplaceABI, infuraProvider);
         const nftCollectionReadOnly = new ethers.Contract(nftCollectionAddress, nftCollectionABI, infuraProvider);
 
@@ -34,7 +33,6 @@ const useMarketplace = (account) => {
           }
           const signer = await provider.getSigner();
 
-          // Khởi tạo contract với signer
           const marketplaceWithSigner = new ethers.Contract(marketplaceAddress, marketplaceABI, signer);
           marketplaceWithSigner.signer = signer;
           setMarketplaceContract(marketplaceWithSigner);

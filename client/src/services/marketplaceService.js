@@ -7,7 +7,6 @@ import { socket } from '../lib/socketClient';
 import { addNFT, removeNFT } from '../redux/slices/marketplace/nftSlice';
 import { addListing, removeListing } from '../redux/slices/marketplace/listingSlice';
 
-
 export const mintNFT = async (contract, quantity, account, dispatch, updateBalances) => {
   if (!contract || !contract.signer) {
     toast.error('Contract or signer not initialized');
@@ -18,48 +17,54 @@ export const mintNFT = async (contract, quantity, account, dispatch, updateBalan
     const tokenIdBefore = await contract.getCurrentTokenId();
     console.log('TokenId before mint:', tokenIdBefore.toString());
 
-    const tx = await contract.mint(quantity, { gasLimit: 100000 });
+    const tx = await contract.mint(quantity, { gasLimit: 125000 });
     const receipt = await tx.wait();
     console.log('Mint receipt:', receipt);
     await updateBalances();
 
-    let tokenId = 'pending';
+    let tokenIds = [];
     for (const log of receipt.logs) {
       try {
         const parsedLog = contract.interface.parseLog(log);
         if (parsedLog.name === "NFTMinted") {
-          tokenId = parsedLog.args.tokenId.toString();
-          break;
+          tokenIds.push(parsedLog.args.tokenId.toString());
         }
       } catch (err) {
-        // Bỏ qua log không parse được (không thuộc contract này)
+        // Bỏ qua log không parse được
       }
     }
-    
-    console.log('Minted tokenId after mint:', tokenId);
 
-    let tokenURI = 'Loading...';
-    if (!isNaN(tokenId)) {
+    if (tokenIds.length === 0) {
+      // Fallback: Lấy tokenId từ trạng thái contract sau mint
+      const tokenIdAfter = await contract.getCurrentTokenId();
+      tokenIds = Array.from({ length: quantity }, (_, i) => (parseInt(tokenIdAfter) + i).toString());
+      console.warn('No NFTMinted events found, using fallback tokenIds:', tokenIds);
+    }
+
+    console.log('Minted tokenIds:', tokenIds);
+
+    const tokenURIs = await Promise.all(tokenIds.map(async (tokenId) => {
       try {
-        tokenURI = await contract.tokenURI(tokenId);
-        console.log('Fetched tokenURI:', tokenURI);
+        return await contract.tokenURI(tokenId);
       } catch (uriError) {
-        console.warn('Failed to fetch tokenURI:', uriError);
-        tokenURI = `https://example.com/nft/${tokenId}.json`; // Fallback URI
+        console.warn(`Failed to fetch tokenURI for tokenId ${tokenId}:`, uriError);
+        return `https://example.com/nft/${tokenId}.json`; // Fallback URI
       }
-    }
+    }));
 
-    dispatch(addNFT({ tokenId, tokenURI }));
-    socket.emit('marketplaceEvent', {
-      type: 'NFTMinted',
-      userAddress: account,
-      tokenId: tokenId,
-      tokenURI: tokenURI,
-      timestamp: new Date().toISOString(),
+    tokenIds.forEach((tokenId, index) => {
+      dispatch(addNFT({ tokenId, tokenURI: tokenURIs[index] }));
+      socket.emit('marketplaceEvent', {
+        type: 'NFTMinted',
+        userAddress: account,
+        tokenId: tokenId,
+        tokenURI: tokenURIs[index],
+        timestamp: new Date().toISOString(),
+      });
     });
 
     toast.success('Minted successfully!');
-    return { tokenId, tokenURI }; // Trả về object chứa tokenId và tokenURI
+    return { tokenIds, tokenURIs }; // Trả về object chứa mảng tokenIds và tokenURIs
   } catch (error) {
     console.error('Error minting:', error);
     if (error.code !== 'ACTION_REJECTED') {
@@ -191,7 +196,7 @@ export const listItem = async (contract, tokenId, price, account, dispatch, upda
     }
 
     console.log('Listing item...');
-    const tx = await contract.listItem(nftCollectionAddress, tokenId, price, { gasLimit: 290000 });
+    const tx = await contract.listItem(nftCollectionAddress, tokenId, price, { gasLimit: 310000 });
     const receipt = await tx.wait();
     console.log('List receipt:', receipt);
     await updateBalances();
