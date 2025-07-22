@@ -3,6 +3,7 @@ import { EthersAdapter } from '@reown/appkit-adapter-ethers'
 
 // Get projectId from https://cloud.reown.com
 export const projectId = import.meta.env.VITE_REOWN_PROJECT_ID
+export const origin = import.meta.env.VITE_ORIGIN
 
 if (!projectId) {
   throw new Error('Project ID is not defined')
@@ -12,7 +13,7 @@ if (!projectId) {
 export const metadata = {
   name: 'AppKit',
   description: 'AppKit Example',
-  url: 'http://localhost:5173', // origin must match your domain & subdomain
+  url: origin, // origin must match your domain & subdomain
   icons: ['https://avatars.githubusercontent.com/u/179229932']
 }
 
