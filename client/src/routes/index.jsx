@@ -19,11 +19,16 @@ const routes = [
       { path: 'collection', element: <UserNFTs /> },
       { path: 'my-listings', element: <MyListings /> },
       { path: 'available-listings', element: <AvailableListing /> },
+      { path: '*', element: <Navigate to="collection" /> }, // Fallback route
     ],
   },
   {
     path: '/',
     element: <Navigate to="/marketplace" />, // Default route
+  },
+  {
+    path: '*', // Catch-all route
+    element: <Navigate to="/marketplace" />,
   },
 ];
 
